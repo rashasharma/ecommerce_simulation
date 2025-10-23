@@ -1,6 +1,8 @@
+// Product.h
 #ifndef PRODUCT_H
 #define PRODUCT_H
 
+#include <iostream>
 #include <string>
 using namespace std;
 
@@ -11,15 +13,18 @@ protected:
     double price;
 
 public:
-    Product(int id, const std::string& name, double price);
-    virtual ~Product() = default;
+    Product(int id, string name, double price)
+        : id(id), name(name), price(price) {}
 
-    int getId() const;
-    string getName() const;
-    double getPrice() const;
+    virtual ~Product() {}
 
+    // Getters
+    int getId() const { return id; }
+    string getName() const { return name; }
+    double getPrice() const { return price; }
 
+    // Pure virtual function
     virtual void displayDetails() const = 0;
 };
 
-#endif 
+#endif

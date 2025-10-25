@@ -1,19 +1,21 @@
-#include "Book.h"
-#include <iostream>
+#ifndef BOOK_H
+#define BOOK_H
 
-// Constructor: calls the base class constructor first
-Book::Book(int id, std::string name, double price, const std::string& author)
-    : Product(id, name, price), author(author) {
-    // Initialization list handles base and derived members
-}
+#include "Product.h"
+#include <string>
 
-// Implementation of the overridden function
-void Book::displayDetails() const {
-    // Call the base class function to display common details
-    Product::displayDetails();
-    
-    // Display Book-specific details
-    std::cout << "Type: Book\n";
-    std::cout << "Author: " << author << "\n";
-    std::cout << "---------------------------------\n";
-}
+class Book : public Product {
+private:
+    std::string author;
+    // Note: Kept 'publisher' optional and simplified for this core task,
+    // focusing on 'author' as the primary unique attribute.
+
+public:
+    // Constructor
+    Book(int id, std::string name, double price, const std::string& author);
+
+    // Override the virtual function to display specific book details
+    void displayDetails() const override;
+};
+
+#endif // BOOK_H

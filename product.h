@@ -1,4 +1,3 @@
-// Product.h
 #ifndef PRODUCT_H
 #define PRODUCT_H
 
@@ -8,23 +7,20 @@ using namespace std;
 
 class Product {
 protected:
-    int id;
-    string name;
-    double price;
+    int m_id;
+    string m_name;
+    double m_price;
 
 public:
-    Product(int id, string name, double price)
-        : id(id), name(name), price(price) {}
+    Product(int id, const string& name, double price);
+    virtual ~Product() = default;
+    
+    int getId() const { return m_id; }
+    string getName() const { return m_name; }
+    double getPrice() const { return m_price; }
 
-    virtual ~Product() {}
-
-    // Getters
-    int getId() const { return id; }
-    string getName() const { return name; }
-    double getPrice() const { return price; }
-
-    // Pure virtual function
+    // Pure virtual function for polymorphism
     virtual void displayDetails() const = 0;
 };
 
-#endif
+#endif // PRODUCT_H

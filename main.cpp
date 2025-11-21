@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <memory>
 #include "book.h"
 #include "Apparel.h"
 #include "Electronics.h"
@@ -21,6 +22,80 @@ void showMenu() {
     cout << "Enter your choice: ";
 }
 
+void addProductToInventory(Inventory& inventory) {
+    cout << "\nSelect Product Type:\n";
+    cout << "1. Book\n2. Electronics\n3. Apparel\n";
+    cout << "Enter type: ";
+    
+    int type = InputUtils::getValidatedInt("");
+    
+    int id = InputUtils::getValidatedInt("Enter Product ID: ");
+    string name = InputUtils::getStringInput("Enter Product Name: ");
+    double price = InputUtils::getValidatedDouble("Enter Price: ");
+    int stock = InputUtils::getValidatedInt("Enter Initial Stock: ");
+
+    Product* product = nullptr;
+
+    try {
+        if (type == 1) {
+            string author = InputUtils::getStringInput("Enter Author Name: ");
+            product = new Book(id, name, price, author);
+        } 
+        else if (type == 2) {
+            string brand = InputUtils::getStringInput("Enter Brand: ");
+            int warranty = InputUtils::getValidatedInt("Enter Warranty (months): ");
+            product = new Electronics(id, name, price, brand, warranty);
+        } 
+        else if (type == 3) {
+            string size = InputUtils::getStringInput("Enter Size: ");
+            string color = InputUtils::getStringInput("Enter Color: ");
+            product = new Apparel(id, name, price, size, color);
+        } 
+        else {
+            cout << "❌ Invalid product type!\n";
+            return;
+        }
+
+        inventory.addProduct(product, stock);
+        cout << "✅ Product added successfully!\n";
+    } 
+    catch (const exception& e) {
+        cerr << "Error adding product: " << e.what() << endl;
+        delete product;
+    }
+}
+
+void viewAllProducts(Inventory& inventory) {
+    auto products = inventory.getAllProducts();
+    if (products.empty()) {
+        cout << "No products available in inventory.\n";
+    } else {
+        cout << "\n=== Available Products ===\n";
+        for (auto* product : products) {
+            product->displayDetails();
+            cout << "Stock: " << inventory.getStockLevel(product->getId()) << endl;
+            cout << "--------------------------\n";
+        }
+    }
+}
+
+void addProductToCart(Inventory& inventory, ShoppingCart& cart) {
+    int id = InputUtils::getValidatedInt("Enter Product ID to add to cart: ");
+
+    try {
+        Product* item = inventory.getProductById(id);
+        inventory.processSale(id);
+        cart.addItem(item);
+        cout << "✅ Added to cart successfully!\n";
+    } 
+    catch (const ProductNotFoundException& e) {
+        cerr << e.what() << endl;
+    } 
+    catch (const OutOfStockException& e) {
+        cerr << e.what() << endl;
+    }
+}
+
 int main() {
     Inventory store;
     ShoppingCart cart;
@@ -33,108 +108,22 @@ int main() {
         cin >> choice;
 
         switch (choice) {
-            // ---------------------------------------------------
-            case 1: { // Add Product to Inventory
-                cout << "\nSelect Product Type:\n";
-                cout << "1. Book\n2. Electronics\n3. Apparel\n";
-                cout << "Enter type: ";
-                int type;
-                cin >> type;
-
-                int id, stock;
-                string name;
-                double price;
-
-                cout << "Enter Product ID: ";
-                cin >> id;
-                cin.ignore();
-                cout << "Enter Product Name: ";
-                getline(cin, name);
-                cout << "Enter Price: ";
-                cin >> price;
-                cout << "Enter Initial Stock: ";
-                cin >> stock;
-
-                Product* p = nullptr;
-
-                if (type == 1) {
-                    string author;
-                    cin.ignore();
-                    cout << "Enter Author Name: ";
-                    getline(cin, author);
-                    p = new Book(id, name, price, author);
-                } 
-                else if (type == 2) {
-                    string brand;
-                    int warranty;
-                    cin.ignore();
-                    cout << "Enter Brand: ";
-                    getline(cin, brand);
-                    cout << "Enter Warranty (months): ";
-                    cin >> warranty;
-                    p = new Electronics(id, name, price, brand, warranty);
-                } 
-                else if (type == 3) {
-                    string size, color;
-                    cin.ignore();
-                    cout << "Enter Size: ";
-                    getline(cin, size);
-                    cout << "Enter Color: ";
-                    getline(cin, color);
-                    p = new Apparel(id, name, price, size, color);
-                } 
-                else {
-                    cout << "❌ Invalid product type!\n";
-                    break;
-                }
-
-                store.addProduct(p, stock);
-                cout << "✅ Product added successfully!\n";
+            case 1:
+                addProductToInventory(store);
                 break;
-            }
 
-            // ---------------------------------------------------
-            case 2: { // View Products
-                auto products = store.getAllProducts();
-                if (products.empty()) {
-                    cout << "No products available in inventory.\n";
-                } else {
-                    cout << "\n=== Available Products ===\n";
-                    for (auto* p : products) {
-                        p->displayDetails();
-                        cout << "--------------------------\n";
-                    }
-                }
+            case 2:
+                viewAllProducts(store);
                 break;
-            }
 
-            // ---------------------------------------------------
-            case 3: { // Add Product to Cart
-                cout << "Enter Product ID to add to cart: ";
-                int id;
-                cin >> id;
-
-                try {
-                    Product* item = store.getProductById(id);
-                    store.processSale(id);
-                    cart.addItem(item);
-                    cout << "✅ Added to cart successfully!\n";
-                } 
-                catch (const ProductNotFoundException& e) {
-                    cerr << e.what() << endl;
-                } 
-                catch (const OutOfStockException& e) {
-                    cerr << e.what() << endl;
-                }
+            case 3:
+                addProductToCart(store, cart);
                 break;
-            }
 
-            // ---------------------------------------------------
             case 4:
                 cart.displayCart();
                 break;
 
-            // ---------------------------------------------------
             case 5:
                 cout << "\nFinal Cart Summary:\n";
                 cart.displayCart();
@@ -142,7 +131,6 @@ int main() {
                 running = false;
                 break;
 
-            // ---------------------------------------------------
             default:
                 cout << "Invalid choice! Please try again.\n";
                 cin.clear();

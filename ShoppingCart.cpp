@@ -1,6 +1,7 @@
 #include "ShoppingCart.h"
 #include <iostream>  
-#include <iomanip> 
+#include <iomanip>
+#include <algorithm>
 void ShoppingCart::addItem(Product* item) {
     m_items.push_back(item);
 }
@@ -27,6 +28,26 @@ void ShoppingCart::displayCart() const {
     }
     
     std::cout << "-----------------" << std::endl;
-    std::cout << "Total: $" << getTotalPrice() << std::endl;
+    std::cout << "Total: ₹" << getTotalPrice() << std::endl;
     std::cout << "-----------------" << std::endl;
+
+}
+void ShoppingCart::removeItem(int id) {
+    bool found = false;
+
+    auto it = m_items.begin();
+    while (it != m_items.end()) {
+        if ((*it)->getId() == id) {
+            it = m_items.erase(it);
+            found = true;
+            std::cout << "Item removed from cart.\n";
+            return; 
+        } else {
+            ++it;
+        }
+    }
+
+    if (!found) {
+        std::cout << "Item not found in cart.\n";
+    }
 }

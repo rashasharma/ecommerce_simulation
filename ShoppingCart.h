@@ -12,4 +12,6 @@ public:
     double getTotalPrice() const;
 
     void displayCart() const;
+    
+    void removeItem(int id);
 };

@@ -14,6 +14,7 @@ public:
     ~Inventory();
     void addProduct(Product* product, int initialStock);
     Product* getProductById(int id);
+    int getStockLevel(int id);
     void processSale(int id);
     std::vector<Product*> getAllProducts() const;
 };

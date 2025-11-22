@@ -18,7 +18,12 @@ Product* Inventory::getProductById(int id) {
     }
     return m_productCatalog.at(id);
 }
-
+int Inventory::getStockLevel(int id) {
+    if (m_stockLevel.find(id) != m_stockLevel.end()) {
+        return m_stockLevel[id];
+    }
+    return 0;
+}
 void Inventory::processSale(int id) {
     if (m_stockLevel.at(id) <= 0) {
         throw OutOfStockException();

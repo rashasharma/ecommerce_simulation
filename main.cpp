@@ -2,7 +2,8 @@
 #include <limits>
 #include <memory>
 #include <vector>
-#include "book.h"
+#include <map>
+#include "Book.h"
 #include "Apparel.h"
 #include "Electronics.h"
 #include "Inventory.h"
@@ -12,16 +13,89 @@
 #include "FileHandler.h"
 
 using namespace std;
+
 const string INVENTORY_FILENAME = "inventory_data.csv";
 
-void showMenu() {
-    cout << "\n========== SHOPPING SYSTEM ==========\n";
+map<string, string> users; 
+string currentUser = "";
+string currentUserRole = "";
+ShoppingCart currentUserCart;
+
+void simulateLogin() {
+    cout << "\n========== LOGIN ==========\n";
+    cout << "Who are you? ";
+    
+    string username;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+    getline(cin, username);
+    
+    username.erase(0, username.find_first_not_of(" \t\n\r\f\v")); 
+    username.erase(username.find_last_not_of(" \t\n\r\f\v") + 1); 
+    
+    if (username.empty()) {
+        cout << "❌ Invalid username! Username cannot be empty.\n";
+        return;
+    }
+    if (users.find(username) == users.end()) {
+        cout << "New user detected! Select your role:\n";
+        cout << "1. Customer\n";
+        cout << "2. Admin\n";
+        cout << "Enter choice: ";
+        int roleChoice = InputUtils::getValidatedInt("");
+        
+        if (roleChoice == 1) {
+            users[username] = "customer";
+        } else if (roleChoice == 2) {
+            users[username] = "admin";
+        } else {
+            cout << "❌ Invalid choice! Defaulting to Customer.\n";
+            users[username] = "customer";
+        }
+    }
+    
+    currentUser = username;
+    currentUserRole = users[username];
+    cout << "✅ Welcome " << username << " (" << currentUserRole << ")!\n";
+}
+
+void logout() {
+    cout << "👋 Goodbye " << currentUser << "!\n";
+    cout << "Saving inventory to " << INVENTORY_FILENAME << "...\n";
+    
+    currentUser = "";
+    currentUserRole = "";
+    currentUserCart = ShoppingCart(); 
+}
+
+void showMainMenu() {
+    cout << "\n========== E-COMMERCE SYSTEM ==========\n";
+    cout << "1. Login\n";
+    cout << "2. Exit\n";
+    cout << "======================================\n";
+    cout << "Enter your choice: ";
+}
+
+void showCustomerMenu() {
+    cout << "\n========== CUSTOMER MENU ==========\n";
+    cout << "Welcome, " << currentUser << "!\n";
+    cout << "1. View All Products\n";
+    cout << "2. Add Product to Cart\n";
+    cout << "3. View Cart\n";
+    cout << "4. Remove Item from Cart\n";
+    cout << "5. Checkout\n";
+    cout << "6. Logout\n";
+    cout << "===================================\n";
+    cout << "Enter your choice: ";
+}
+
+void showAdminMenu() {
+    cout << "\n========== ADMIN MENU ==========\n";
+    cout << "Welcome, " << currentUser << "!\n";
     cout << "1. Add Product to Inventory\n";
     cout << "2. View All Products\n";
-    cout << "3. Add Product to Cart\n";
-    cout << "4. View Cart\n";
-    cout << "5. Checkout & Exit\n";
-    cout << "=====================================\n";
+    cout << "3. View Stock Levels\n";
+    cout << "4. Logout\n";
+    cout << "================================\n";
     cout << "Enter your choice: ";
 }
 
@@ -36,22 +110,22 @@ void addProductToInventory(Inventory& inventory) {
     double price = InputUtils::getValidatedDouble("Enter Price: ");
     int stock = InputUtils::getValidatedInt("Enter Initial Stock: ");
 
-    std::shared_ptr<Product> product = nullptr;
+    shared_ptr<Product> product = nullptr;
 
     try {
         if (type == 1) {
             string author = InputUtils::getStringInput("Enter Author Name: ");
-            product = std::make_shared<Book>(id, name, price, author);
+            product = make_shared<Book>(id, name, price, author);
         } 
         else if (type == 2) {
             string brand = InputUtils::getStringInput("Enter Brand: ");
             int warranty = InputUtils::getValidatedInt("Enter Warranty (months): ");
-            product = std::make_shared<Electronics>(id, name, price, brand, warranty);
+            product = make_shared<Electronics>(id, name, price, brand, warranty);
         } 
         else if (type == 3) {
             string size = InputUtils::getStringInput("Enter Size: ");
             string color = InputUtils::getStringInput("Enter Color: ");
-            product = std::make_shared<Apparel>(id, name, price, size, color);
+            product = make_shared<Apparel>(id, name, price, size, color);
         } 
         else {
             cout << "❌ Invalid product type!\n";
@@ -81,15 +155,27 @@ void viewAllProducts(Inventory& inventory) {
     }
 }
 
-void addProductToCart(Inventory& inventory, ShoppingCart& cart) {
+void viewStockLevels(Inventory& inventory) {
+    auto products = inventory.getAllProducts();
+    
+    if (products.empty()) {
+        cout << "No products available in inventory.\n";
+    } else {
+        cout << "\n=== Stock Levels ===\n";
+        for (const auto& product : products) {
+            cout << "ID: " << product->getId() << " | " << product->getName();
+            cout << " | Stock: " << inventory.getStockLevel(product->getId()) << endl;
+        }
+    }
+}
+
+void addProductToCart(Inventory& inventory) {
     int id = InputUtils::getValidatedInt("Enter Product ID to add to cart: ");
 
     try {
-        std::shared_ptr<Product> item = inventory.getProductById(id);
-        
+        shared_ptr<Product> item = inventory.getProductById(id);
         inventory.processSale(id);
-        
-        cart.addItem(item);
+        currentUserCart.addItem(item);
         cout << "✅ Added to cart successfully!\n";
     } 
     catch (const ProductNotFoundException& e) {
@@ -100,60 +186,113 @@ void addProductToCart(Inventory& inventory, ShoppingCart& cart) {
     }
 }
 
+void removeFromCart() {
+    int id = InputUtils::getValidatedInt("Enter Product ID to remove from cart: ");
+    currentUserCart.removeItem(id);
+}
+
+void checkout() {
+    cout << "\n=== Checkout Summary ===\n";
+    currentUserCart.displayCart();
+    cout << "Thank you for your purchase, " << currentUser << "!\n";
+    currentUserCart = ShoppingCart(); 
+}
+
+void runCustomerMenu(Inventory& inventory) {
+    bool inMenu = true;
+    while (inMenu) {
+        showCustomerMenu();
+        int choice = InputUtils::getValidatedInt("");
+
+        switch (choice) {
+            case 1:
+                viewAllProducts(inventory);
+                break;
+            case 2:
+                addProductToCart(inventory);
+                break;
+            case 3:
+                currentUserCart.displayCart();
+                break;
+            case 4:
+                removeFromCart();
+                break;
+            case 5:
+                checkout();
+                break;
+            case 6:
+                FileHandler::saveInventory(inventory, INVENTORY_FILENAME);
+                logout();
+                inMenu = false;
+                break;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+        }
+    }
+}
+
+void runAdminMenu(Inventory& inventory) {
+    bool inMenu = true;
+    while (inMenu) {
+        showAdminMenu();
+        int choice = InputUtils::getValidatedInt("");
+
+        switch (choice) {
+            case 1:
+                addProductToInventory(inventory);
+                break;
+            case 2:
+                viewAllProducts(inventory);
+                break;
+            case 3:
+                viewStockLevels(inventory);
+                break;
+            case 4:
+                FileHandler::saveInventory(inventory, INVENTORY_FILENAME);
+                logout();
+                inMenu = false;
+                break;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+        }
+    }
+}
+
 int main() {
     Inventory store;
-    ShoppingCart cart;
 
     cout << "Loading inventory...\n";
     try {
         FileHandler::loadInventory(store, INVENTORY_FILENAME);
         cout << "Inventory loaded successfully.\n";
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         cout << "No previous inventory found or load error. Starting empty.\n";
     }
 
     bool running = true;
-    int choice;
 
     while (running) {
-        showMenu();
-        choice = InputUtils::getValidatedInt(""); 
+        if (currentUser.empty()) {
+            showMainMenu();
+            int choice = InputUtils::getValidatedInt("");
 
-        switch (choice) {
-            case 1:
-                addProductToInventory(store);
-                break;
-
-            case 2:
-                viewAllProducts(store);
-                break;
-
-            case 3:
-                addProductToCart(store, cart);
-                break;
-
-            case 4:
-                cart.displayCart();
-                break;
-
-            case 5:
-                cout << "\nFinal Cart Summary:\n";
-                cart.displayCart();
-                
-                cout << "Saving inventory to " << INVENTORY_FILENAME << "...\n";
-                FileHandler::saveInventory(store, INVENTORY_FILENAME);
-                // ------------------------------
-                
-                cout << "Thank you for shopping with us!\n";
-                running = false;
-                break;
-
-            default:
-                cout << "Invalid choice! Please try again.\n";
-                if (cin.fail()) {
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                }
+            switch (choice) {
+                case 1:
+                    simulateLogin();
+                    break;
+                case 2:
+                    cout << "Thank you for using our system!\n";
+                    running = false;
+                    break;
+                default:
+                    cout << "Invalid choice! Please try again.\n";
+            }
+        } else {
+            if (currentUserRole == "admin") {
+                runAdminMenu(store);
+            } else {
+                runCustomerMenu(store);
+            }
         }
     }
 

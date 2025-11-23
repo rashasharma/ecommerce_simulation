@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 #include "Inventory.h"
-#include "book.h"
+#include "Book.h"
 #include "Electronics.h"
 #include "Apparel.h"
 

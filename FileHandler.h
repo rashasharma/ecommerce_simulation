@@ -22,7 +22,9 @@ public:
         }
 
         for (const auto& product : inv.getAllProducts()) {
-           file << product->toCSV() << "\n";
+            int currentStock = inv.getAllProducts().empty() ? 0 : inv.getStockLevel(product->getId());
+            
+            file << product->toCSV() << "," << currentStock << "\n";
         }
         file.close();
         std::cout << "Inventory saved to " << filename << "\n";
@@ -45,8 +47,7 @@ public:
             while (getline(ss, segment, ',')) {
                 tokens.push_back(segment);
             }
-
-            if (tokens.empty()) continue;
+            if (tokens.size() < 4) continue;
 
             std::string type = tokens[0];
             
@@ -55,20 +56,34 @@ public:
                 int id = std::stoi(tokens[1]);
                 std::string name = tokens[2];
                 double price = std::stod(tokens[3]);
-                int stock = 5; 
+                
+                int stockIndex = -1;
+                int stock = 0;
+
                 if (type == "Book") {
+                    if (tokens.size() < 5) continue;
                     std::string author = tokens[4];
                     product = std::make_shared<Book>(id, name, price, author);
+                    stockIndex = 5;
                 } 
                 else if (type == "Electronics") {
+                    if (tokens.size() < 6) continue;
                     std::string brand = tokens[4];
                     int warranty = std::stoi(tokens[5]);
                     product = std::make_shared<Electronics>(id, name, price, brand, warranty);
+                    stockIndex = 6;
                 } 
                 else if (type == "Apparel") {
+                    if (tokens.size() < 6) continue;
                     std::string size = tokens[4];
                     std::string color = tokens[5];
                     product = std::make_shared<Apparel>(id, name, price, size, color);
+                    stockIndex = 6;
+                }
+                if (stockIndex != -1 && tokens.size() > stockIndex) {
+                    stock = std::stoi(tokens[stockIndex]);
+                } else {
+                    stock = 5; 
                 }
 
                 if (product) {
@@ -82,4 +97,4 @@ public:
     }
 };
 
-#endif 
+#endif

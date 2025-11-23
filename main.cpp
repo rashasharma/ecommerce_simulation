@@ -186,9 +186,12 @@ void addProductToCart(Inventory& inventory) {
     }
 }
 
-void removeFromCart() {
+void removeFromCart(Inventory& inventory) {
     int id = InputUtils::getValidatedInt("Enter Product ID to remove from cart: ");
-    currentUserCart.removeItem(id);
+    if (currentUserCart.removeItem(id)) {
+        inventory.restock(id, 1);
+        cout << "Stock restored to inventory.\n";
+    }
 }
 
 void checkout() {
@@ -215,7 +218,7 @@ void runCustomerMenu(Inventory& inventory) {
                 currentUserCart.displayCart();
                 break;
             case 4:
-                removeFromCart();
+                removeFromCart(inventory);
                 break;
             case 5:
                 checkout();

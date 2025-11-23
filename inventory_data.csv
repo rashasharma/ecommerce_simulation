@@ -1,2 +1,5 @@
-Book,99,Test,10.000000,me
-Electronics,101,Laptop,1000000.000000,Apple,10
+Book,99,Test,10.000000,me,5
+Book,101,complete reference,800.000000,herbert shield,5
+Electronics,202,gaming mouse,500.000000,logitech,24,2
+Apparel,303,tshirt,500.000000,L,Blue,5
+Book,900,rare,100.000000,rasha,1

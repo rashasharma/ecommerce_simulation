@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cctype>
 #include <limits>
 #include "Product.h"
 using namespace std;
@@ -50,7 +51,10 @@ public:
     static string getStringInput(const string& prompt) {
         cout << prompt;
         string value;
-        if (cin.peek() == '\n') cin.ignore(); 
+        char ch;
+        while(isspace(cin.peek()) && cin.peek() != EOF) {
+            cin.get(ch);
+        }
         getline(cin, value);
         return value;
     }

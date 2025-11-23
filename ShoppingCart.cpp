@@ -33,7 +33,7 @@ void ShoppingCart::displayCart() const {
     std::cout << "-----------------" << std::endl;
 }
 
-void ShoppingCart::removeItem(int id) {
+bool ShoppingCart::removeItem(int id) {
     bool found = false;
 
     auto it = m_items.begin();
@@ -42,10 +42,11 @@ void ShoppingCart::removeItem(int id) {
             it = m_items.erase(it);
             found = true;
             std::cout << "Item removed from cart.\n";
-            return; 
+            return true; 
         } else {
             ++it;
         }
+        return false;
     }
 
     if (!found) {

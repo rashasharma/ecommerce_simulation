@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <vector>
 #include "book.h"
 #include "Apparel.h"
 #include "Electronics.h"
@@ -8,8 +9,10 @@
 #include "ShoppingCart.h"
 #include "Exceptions.h"
 #include "Utils.h"
+#include "FileHandler.h"
 
 using namespace std;
+const string INVENTORY_FILENAME = "inventory_data.csv";
 
 void showMenu() {
     cout << "\n========== SHOPPING SYSTEM ==========\n";
@@ -28,28 +31,27 @@ void addProductToInventory(Inventory& inventory) {
     cout << "Enter type: ";
     
     int type = InputUtils::getValidatedInt("");
-    
     int id = InputUtils::getValidatedInt("Enter Product ID: ");
     string name = InputUtils::getStringInput("Enter Product Name: ");
     double price = InputUtils::getValidatedDouble("Enter Price: ");
     int stock = InputUtils::getValidatedInt("Enter Initial Stock: ");
 
-    Product* product = nullptr;
+    std::shared_ptr<Product> product = nullptr;
 
     try {
         if (type == 1) {
             string author = InputUtils::getStringInput("Enter Author Name: ");
-            product = new Book(id, name, price, author);
+            product = std::make_shared<Book>(id, name, price, author);
         } 
         else if (type == 2) {
             string brand = InputUtils::getStringInput("Enter Brand: ");
             int warranty = InputUtils::getValidatedInt("Enter Warranty (months): ");
-            product = new Electronics(id, name, price, brand, warranty);
+            product = std::make_shared<Electronics>(id, name, price, brand, warranty);
         } 
         else if (type == 3) {
             string size = InputUtils::getStringInput("Enter Size: ");
             string color = InputUtils::getStringInput("Enter Color: ");
-            product = new Apparel(id, name, price, size, color);
+            product = std::make_shared<Apparel>(id, name, price, size, color);
         } 
         else {
             cout << "❌ Invalid product type!\n";
@@ -61,17 +63,17 @@ void addProductToInventory(Inventory& inventory) {
     } 
     catch (const exception& e) {
         cerr << "Error adding product: " << e.what() << endl;
-        delete product;
     }
 }
 
 void viewAllProducts(Inventory& inventory) {
     auto products = inventory.getAllProducts();
+    
     if (products.empty()) {
         cout << "No products available in inventory.\n";
     } else {
         cout << "\n=== Available Products ===\n";
-        for (auto* product : products) {
+        for (const auto& product : products) {
             product->displayDetails();
             cout << "Stock: " << inventory.getStockLevel(product->getId()) << endl;
             cout << "--------------------------\n";
@@ -83,8 +85,10 @@ void addProductToCart(Inventory& inventory, ShoppingCart& cart) {
     int id = InputUtils::getValidatedInt("Enter Product ID to add to cart: ");
 
     try {
-        Product* item = inventory.getProductById(id);
+        std::shared_ptr<Product> item = inventory.getProductById(id);
+        
         inventory.processSale(id);
+        
         cart.addItem(item);
         cout << "✅ Added to cart successfully!\n";
     } 
@@ -100,12 +104,20 @@ int main() {
     Inventory store;
     ShoppingCart cart;
 
+    cout << "Loading inventory...\n";
+    try {
+        FileHandler::loadInventory(store, INVENTORY_FILENAME);
+        cout << "Inventory loaded successfully.\n";
+    } catch (const std::exception& e) {
+        cout << "No previous inventory found or load error. Starting empty.\n";
+    }
+
     bool running = true;
     int choice;
 
     while (running) {
         showMenu();
-        cin >> choice;
+        choice = InputUtils::getValidatedInt(""); 
 
         switch (choice) {
             case 1:
@@ -127,14 +139,21 @@ int main() {
             case 5:
                 cout << "\nFinal Cart Summary:\n";
                 cart.displayCart();
+                
+                cout << "Saving inventory to " << INVENTORY_FILENAME << "...\n";
+                FileHandler::saveInventory(store, INVENTORY_FILENAME);
+                // ------------------------------
+                
                 cout << "Thank you for shopping with us!\n";
                 running = false;
                 break;
 
             default:
                 cout << "Invalid choice! Please try again.\n";
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
         }
     }
 

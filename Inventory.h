@@ -4,17 +4,18 @@
 #include <string>
 #include <vector>
 #include "Product.h"     
-#include "Exceptions.h"  
+#include "Exceptions.h" 
+using namespace std;
+ 
 class Inventory {
 private:
-    std::map<int, Product*> m_productCatalog;
-    std::map<int, int> m_stockLevel;
+    map<int, shared_ptr<Product>> m_productCatalog;
+    map<int, int> m_stockLevel;
 
 public:
-    ~Inventory();
-    void addProduct(Product* product, int initialStock);
-    Product* getProductById(int id);
+    void addProduct(shared_ptr<Product> product, int initialStock);
+    shared_ptr<Product> getProductById(int id);
+    vector<shared_ptr<Product>> getAllProducts() const;
     int getStockLevel(int id);
     void processSale(int id);
-    std::vector<Product*> getAllProducts() const;
 };

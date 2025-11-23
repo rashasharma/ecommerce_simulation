@@ -9,3 +9,7 @@ void Book::displayDetails() const {
               << " | Author: " << author 
               << " | Price: " << getPrice() << std::endl;
 }
+string Book::toCSV() const {
+    return "Book," + std::to_string(getId()) + "," + getName() + "," + 
+           std::to_string(getPrice()) + "," + author;
+}

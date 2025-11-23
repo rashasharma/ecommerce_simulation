@@ -10,3 +10,7 @@ void Electronics::displayDetails() const {
               << " | Warranty: " << warrantyPeriod << " months"
               << " | Price: " << getPrice() << std::endl;
 }
+string Electronics::toCSV() const {
+    return "Electronics," + std::to_string(getId()) + "," + getName() + "," + 
+           std::to_string(getPrice()) + "," + brand + "," + std::to_string(warrantyPeriod);
+}

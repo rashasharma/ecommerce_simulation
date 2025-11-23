@@ -10,3 +10,7 @@ void Apparel::displayDetails() const {
               << " | Color: " << color
               << " | Price: " << getPrice() << std::endl;
 }
+string Apparel::toCSV() const {
+    return "Apparel," + std::to_string(getId()) + "," + getName() + "," + 
+           std::to_string(getPrice()) + "," + size + "," + color;
+}

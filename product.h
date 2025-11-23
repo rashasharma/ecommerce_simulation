@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <sstream>
 using namespace std;
 
 class Product {
@@ -21,6 +23,7 @@ public:
 
     // Pure virtual function for polymorphism
     virtual void displayDetails() const = 0;
+    virtual string toCSV() const = 0;
 };
 
 #endif // PRODUCT_H

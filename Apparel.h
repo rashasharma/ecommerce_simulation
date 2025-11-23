@@ -3,18 +3,17 @@
 
 #include "Product.h"
 #include <string>
+using namespace std;
 
 class Apparel : public Product {
 private:
-    std::string size;
-    std::string color;
+    string size;
+    string color;
 
 public:
-    // Constructor
-    Apparel(int id, std::string name, double price, const std::string& size, const std::string& color);
-
-    // Override the virtual function
+    Apparel(int id, string name, double price, const string& size, const string& color);
     void displayDetails() const override;
+    string toCSV() const override;
 };
 
 #endif // APPAREL_H

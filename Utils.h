@@ -6,9 +6,10 @@
 #include <string>
 #include <limits>
 #include "Product.h"
+using namespace std;
 
 template <typename T>
-T* findItemById(const std::vector<T*>& items, int id) {
+T* findItemById(const vector<T*>& items, int id) {
     for (T* item : items) {
         if (item->getId() == id) {
             return item;
@@ -18,38 +19,39 @@ T* findItemById(const std::vector<T*>& items, int id) {
 }
 class InputUtils {
 public:
-    static int getValidatedInt(const std::string& prompt) {
+    static int getValidatedInt(const string& prompt) {
         int value;
         while (true) {
-            std::cout << prompt;
-            if (std::cin >> value) {
+            cout << prompt;
+            if (cin >> value) {
                 return value;
             } else {
-                std::cout << "Invalid input. Please enter a number.\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         }
     }
 
-    static double getValidatedDouble(const std::string& prompt) {
+    static double getValidatedDouble(const string& prompt) {
         double value;
         while (true) {
-            std::cout << prompt;
-            if (std::cin >> value) {
+            cout << prompt;
+            if (cin >> value) {
                 return value;
             } else {
-                std::cout << "Invalid input. Please enter a number.\n";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         }
     }
 
-    static std::string getStringInput(const std::string& prompt) {
-        std::cout << prompt;
-        std::string value;
-        std::cin >> value;
+    static string getStringInput(const string& prompt) {
+        cout << prompt;
+        string value;
+        if (cin.peek() == '\n') cin.ignore(); 
+        getline(cin, value);
         return value;
     }
 };

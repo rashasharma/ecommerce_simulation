@@ -42,14 +42,15 @@ bool ShoppingCart::removeItem(int id) {
             it = m_items.erase(it);
             found = true;
             std::cout << "Item removed from cart.\n";
-            return true; 
+            return true;
         } else {
             ++it;
         }
-        return false;
     }
 
     if (!found) {
         std::cout << "Item not found in cart.\n";
     }
+
+    return false;  
 }

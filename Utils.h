@@ -9,15 +9,6 @@
 #include "Product.h"
 using namespace std;
 
-template <typename T>
-T* findItemById(const vector<T*>& items, int id) {
-    for (T* item : items) {
-        if (item->getId() == id) {
-            return item;
-        }
-    }
-    return nullptr;
-}
 class InputUtils {
 public:
     static int getValidatedInt(const string& prompt) {
@@ -25,6 +16,7 @@ public:
         while (true) {
             cout << prompt;
             if (cin >> value) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 return value;
             } else {
                 cout << "Invalid input. Please enter a number.\n";
@@ -39,6 +31,7 @@ public:
         while (true) {
             cout << prompt;
             if (cin >> value) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 return value;
             } else {
                 cout << "Invalid input. Please enter a number.\n";

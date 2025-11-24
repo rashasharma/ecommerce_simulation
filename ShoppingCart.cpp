@@ -34,23 +34,21 @@ void ShoppingCart::displayCart() const {
 }
 
 bool ShoppingCart::removeItem(int id) {
-    bool found = false;
-
-    auto it = m_items.begin();
-    while (it != m_items.end()) {
-        if ((*it)->getId() == id) {
-            it = m_items.erase(it);
-            found = true;
-            std::cout << "Item removed from cart.\n";
-            return true;
-        } else {
-            ++it;
-        }
-    }
-
-    if (!found) {
+    auto itemToRemove = findItemById(m_items, id);
+    
+    if (itemToRemove != nullptr) {
+        
+        m_items.erase(
+            std::remove_if(m_items.begin(), m_items.end(),
+                [id](const std::shared_ptr<Product>& item) {
+                    return item->getId() == id;
+                }),
+            m_items.end()
+        );
+        std::cout << "Item removed from cart.\n";
+        return true;
+    } else {
         std::cout << "Item not found in cart.\n";
+        return false;
     }
-
-    return false;  
 }
